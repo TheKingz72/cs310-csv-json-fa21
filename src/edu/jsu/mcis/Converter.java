@@ -69,6 +69,41 @@ public class Converter {
             
             // INSERT YOUR CODE HERE
             
+            JSONObject json = new JSONObject();
+            JSONArray col = new JSONArray();
+            JSONArray row = new JSONArray();
+            JSONArray data = new JSONArray();
+            JSONArray holder;
+
+            String[] record = iterator.next();
+
+            for(int i = 0; i < record.length; i++) {
+
+                col.add(record[i]);
+            }
+
+            while(iterator.hasNext()) {
+
+                holder = new JSONArray();
+                record = iterator.next();
+                row.add(record[0]);
+
+                for(int i = 1; i < record.length; i++) {
+
+                    int stringHolder = Integer.parseInt(record[i]);
+                    holder.add(stringHolder);
+
+                }
+
+                data.add(holder);
+            }
+
+            json.put("rowHeaders", row);
+            json.put("colHeaders", col);
+            json.put("data", data);
+
+            results = JSONValue.toJSONString(json);
+           
         }        
         catch(Exception e) { e.printStackTrace(); }
         
@@ -86,7 +121,29 @@ public class Converter {
             CSVWriter csvWriter = new CSVWriter(writer, ',', '"', '\\', "\n");
             
             // INSERT YOUR CODE HERE
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject)parser.parse(jsonString);
+            JSONArray col = (JSONArray)json.get("colHeaders");
+            JSONArray row = (JSONArray)json.get("rowHeaders");
+            JSONArray data = (JSONArray)json.get("data");
+            JSONArray holder;
+            String[] record = new String[col.size()];
             
+            for(int i = 0; i < col.size(); i ++){
+                record[i] = (String) col.get(i);
+            }
+            
+            csvWriter.writeNext(record);
+            for(int i = 0; i < data.size(); i++){
+                holder = (JSONArray) data.get(i);
+                record = new String[holder.size() + 1];
+                record[0] = (String) row.get(i);
+                for(int j = 0; j < holder.size(); j++) {
+                    record[j + 1] = Long.toString((long)holder.get(j));
+                }
+                csvWriter.writeNext(record);
+            }
+            results = writer.toString();
         }
         
         catch(Exception e) { e.printStackTrace(); }
@@ -94,5 +151,5 @@ public class Converter {
         return results.trim();
         
     }
-
-}
+       
+  }
